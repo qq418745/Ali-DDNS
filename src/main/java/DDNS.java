@@ -18,6 +18,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class DDNS {
@@ -96,45 +98,53 @@ public class DDNS {
         System.out.println("-------------------------------" + functionName + "-------------------------------");
         System.out.println(gson.toJson(result));
     }
+
     public static void main(String[] args) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            public void run() {
+                // 设置鉴权参数，初始化客户端
+                DefaultProfile profile = DefaultProfile.getProfile(Config.profile,// 地域ID
+                        Config.accessKeyID,// 您的AccessKey ID
+                        Config.accessKeySecret);// 您的AccessKey Secret
 
-        //  设置鉴权参数，初始化客户端
-        DefaultProfile profile = DefaultProfile.getProfile("cn-hangzhou",// 地域ID
-                "your-access-key-id",// 您的AccessKey ID
-                "your-access-key-secret");// 您的AccessKey Secret
+                IAcsClient client = new DefaultAcsClient(profile);
+                DDNS ddns = new DDNS();
+                //查询指定二级域名的最新解析记录
+                DescribeSubDomainRecordsRequest describeSubDomainRecordsRequest = new DescribeSubDomainRecordsRequest();
+                describeSubDomainRecordsRequest.setSubDomain(Config.subDomain);
+                DescribeSubDomainRecordsResponse describeSubDomainRecordsResponse = ddns.describeSubDomainRecords(describeSubDomainRecordsRequest, client);
+                log_print("describeSubDomainRecords",describeSubDomainRecordsResponse);
+                List<DescribeSubDomainRecordsResponse.Record> domainRecords = describeSubDomainRecordsResponse.getDomainRecords();
 
-        IAcsClient client = new DefaultAcsClient(profile);
-        DDNS ddns = new DDNS();
-        //查询指定二级域名的最新解析记录
-        DescribeSubDomainRecordsRequest describeSubDomainRecordsRequest = new DescribeSubDomainRecordsRequest();
-        describeSubDomainRecordsRequest.setSubDomain("example.com");
-        DescribeSubDomainRecordsResponse describeSubDomainRecordsResponse = ddns.describeSubDomainRecords(describeSubDomainRecordsRequest, client);
-        log_print("describeSubDomainRecords",describeSubDomainRecordsResponse);
-        List<DescribeSubDomainRecordsResponse.Record> domainRecords = describeSubDomainRecordsResponse.getDomainRecords();
-        //最新的一条解析记录
-        if (domainRecords.size() != 0) {
-            DescribeSubDomainRecordsResponse.Record record = domainRecords.get(0);
-            //  记录ID
-            String recordId = record.getRecordId();
-            //  记录值
-            String recordsValue = record.getValue();
-            //  当前主机公网IP
-            String currentHostIP = ddns.getCurrenHostIP();
-            System.out.println("-------------------------------当前主机公网IP为："+currentHostIP+"-------------------------------");
-            if (!currentHostIP.equals(recordsValue)) {
-                //  修改解析记录
-                UpdateDomainRecordRequest updateDomainRecordRequest = new UpdateDomainRecordRequest();
-                //  主机记录
-                updateDomainRecordRequest.setRR("@");
-                //  记录ID
-                updateDomainRecordRequest.setRecordId(recordId);
-                //  将主机记录值改为当前主机IP
-                updateDomainRecordRequest.setValue(currentHostIP);
-                //  解析记录类型
-                updateDomainRecordRequest.setType("A");
-                UpdateDomainRecordResponse updateDomainRecordResponse = ddns.updateDomainRecord(updateDomainRecordRequest, client);
-                log_print("updateDomainRecord",updateDomainRecordResponse);
+                //最新的一条解析记录
+                if (domainRecords.size() != 0) {
+                    DescribeSubDomainRecordsResponse.Record record = domainRecords.get(0);
+                    //  记录ID
+                    String recordId = record.getRecordId();
+                    //  记录值
+                    String recordsValue = record.getValue();
+                    //  当前主机公网IP
+                    String currentHostIP = ddns.getCurrenHostIP();
+                    System.out.println("-------------------------------当前主机公网IP为："+currentHostIP+"-------------------------------");
+                    if (!currentHostIP.equals(recordsValue)) {
+                        //  修改解析记录
+                        UpdateDomainRecordRequest updateDomainRecordRequest = new UpdateDomainRecordRequest();
+                        //  主机记录
+                        updateDomainRecordRequest.setRR(Config.RR);
+                        //  记录ID
+                        updateDomainRecordRequest.setRecordId(recordId);
+                        //  将主机记录值改为当前主机IP
+                        updateDomainRecordRequest.setValue(currentHostIP);
+                        //  解析记录类型
+                        updateDomainRecordRequest.setType(Config.type);
+                        UpdateDomainRecordResponse updateDomainRecordResponse = ddns.updateDomainRecord(updateDomainRecordRequest, client);
+                        log_print("updateDomainRecord",updateDomainRecordResponse);
+                    }
+                }
             }
-        }
+        }, 0,60 * 1000);
+
+
     }
 }
