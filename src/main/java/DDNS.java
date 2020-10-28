@@ -51,6 +51,10 @@ public class DDNS {
             URL url = new URL(jsonip);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
+
+            urlConnection.setConnectTimeout(5 * 1000);
+            urlConnection.setReadTimeout(5 * 1000);
+
             urlConnection.connect();
             in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             String line;
