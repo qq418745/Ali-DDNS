@@ -1,5 +1,4 @@
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 
 /**
@@ -16,20 +15,25 @@ public class Config {
      static  String profile;
      static  String RR;
      static  String type;
-    //类加载的时候执行
+
     static {
         init();
     }
-
     //加载属性
     private static void init() {
-        InputStream in = null;
+        FileInputStream in = null;
         try {
+
+            File file = new File("");
+            String absolutePath = file.getAbsolutePath();//设定为上级文件夹 获取绝对路径
+            System.out.println("配置文件绝对路径 = " + absolutePath);
             Properties prop = new Properties();
-            //getClassLoader()很重要
-            in = DDNS.class.getClassLoader().getResourceAsStream("DDNS.properties");
+
+            in = new FileInputStream(absolutePath+ "/DDNS.properties");
             prop.load(in);
 
+            accessKeyID = prop.getProperty("accessKeyID");
+            accessKeySecret = prop.getProperty("accessKeySecret");
             accessKeyID = prop.getProperty("accessKeyID");
             accessKeySecret = prop.getProperty("accessKeySecret");
             subDomain = prop.getProperty("subDomain");
@@ -37,8 +41,6 @@ public class Config {
             RR = prop.getProperty("RR");
             type = prop.getProperty("type");
 
-
-            assert in != null;
             in.close();
         } catch (Exception e) {
             e.printStackTrace();
