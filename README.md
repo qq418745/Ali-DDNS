@@ -10,9 +10,9 @@ DDNS.properties 配置域名和访问key等信息
 > 
 > ddns.jar当前目录 执行:
 >
-`` 
- java -jar ddns.jar > ddns.log > 2>&1 &
-``
+````
+nohup java -jar ddns.jar > ddns.log 2>&1 &
+````
 
 
  > windows部署
