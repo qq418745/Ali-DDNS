@@ -51,6 +51,8 @@ public class DDNS {
             URL url = new URL(jsonip);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
+            // 添加请求头
+            urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
             urlConnection.setConnectTimeout(5 * 1000);
             urlConnection.setReadTimeout(5 * 1000);

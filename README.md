@@ -2,7 +2,7 @@
 阿里云 DDNS  域名动态解析API实现
 
 **下载 deploy 文件夹** 
-安装jdk环境
+安装jdk 1.8 
 
 DDNS.properties 配置域名和访问key等信息
 
